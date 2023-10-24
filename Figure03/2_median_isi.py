@@ -28,7 +28,7 @@ LL012_contra = {}
 LL017 = {}
 LL023 = {}
 
-savepath = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\median_ISI.npy'
+savepath = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\intermediate_data\median_ISI.npy'
 
 LL001['templates'] = [5, 6, 10, 48, 59, 75, 91, 92, 101, 110, 114, 118, 125, 149, 164, 165, 176, 178, 180, 197]
 LL004['templates'] = [18, 30, 40, 51, 52]

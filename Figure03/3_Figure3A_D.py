@@ -16,25 +16,63 @@ from scipy.stats import pearsonr, spearmanr
 
 sys.path.insert(1, r'E:\OneDrive - UGent\python_functions')
 
-path = r'E:\OneDrive - UGent\88_LCseizureproject\results\results_seizure_final_mod.xlsx'
-savepath_peak_asymmetry = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\a_asymmetry.png'
-savepath_mean_spike_rate = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\b_mean_spike_rate.png'
-savepath_median_ISI = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\c_median_ISI.png'
-savepath_box_spike_width = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\d_spike_width.png'
-savepath_box_spike_asymmetry = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\e_spike_asymmetry.png'
-savepath_box_spike_rate_mean = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\f_spike_rate_mean.png'
-savepath_box_spike_ISI_median = r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\g_spike_ISI_median.png'
+#path = r'E:\OneDrive - UGent\88_LCseizureproject\results\results_seizure_final_mod.xlsx'
+path = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\output_data'
+
+savepath_peak_asymmetry = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\unused_asymmetry.png'
+savepath_mean_spike_rate = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\unused_mean_spike_rate.png'
+savepath_median_ISI = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\unused_median_ISI.png'
+savepath_box_spike_width = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\a_spike_width.png'
+savepath_box_spike_asymmetry = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\b_spike_asymmetry.png'
+savepath_box_spike_rate_mean = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\c_spike_rate_mean.png'
+savepath_box_spike_ISI_median = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\output\d_spike_ISI_median.png'
+
+files = os.listdir(path)
+
+order_files = [0, 1, 2, 3, 4, 6, 5, 8, 7, 9, 10]
+df = np.load(path + '\\' + files[0])
+for i in order_files:
+    if i == 0:
+        df = np.load(path + '\\' + files[0])
+    else:
+        df = np.row_stack((df, np.load(path + '\\' + files[i])))
+        
+df = df[:,:-1].astype('float64')
+        
+
+
+change = np.zeros((3,3))
+effect_1 = [None]*97
+p_threshold = 0.05
+counter_inhibited = 0
+counter_excited = 0
+counter_nochange = 0
+for y in range(np.shape(df)[0]):
+    if df[y,4] < 0 and df[y,7] < p_threshold:
+        counter_inhibited = counter_inhibited + 1
+        effect_1[y] = 'inhibited'
+    elif df[y,4] > 0 and df[y,7] < p_threshold:
+        counter_excited = counter_excited + 1
+        effect_1[y] = 'excited'
+    elif df[y,7] > p_threshold:
+        counter_nochange = counter_nochange + 1
+        effect_1[y] = 'no change'
+
+    change[0,0] = counter_inhibited
+    change[1,0] = counter_excited
+    change[2,0] = counter_nochange
+
+headers = ['template ID', 'effect_sz1', 'effect_sz2', 'effect_sz3', 'z_sz1', 'z_sz2','z_sz3', 'p_sz1', 'p_sz2', 'p_sz3']
+seizure_responses = pd.DataFrame(data=df, columns=headers)
+seizure_responses['effect'] = effect_1
+
+
+firing_characteristics = np.load(r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\intermediate_data\firing_characteristics.npy', allow_pickle='TRUE').item()
+firing_characteristics['median_ISI'] = np.load(r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\intermediate_data\median_ISI.npy')
 
 
 
-seizure_responses = pd.read_excel(path, 'Pinch_or_light', usecols='R:AC', nrows=97)
-
-firing_characteristics = np.load(r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\firing_characteristics.npy', allow_pickle='TRUE').item()
-firing_characteristics['median_ISI'] = np.load(r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\median_ISI.npy')
-
-
-
-waveform_data = np.load(r'E:\OneDrive - UGent\88_LCseizureproject\results\Report_figures\11_LC_neuron_characteristics\Wide_narrow.npy', allow_pickle='TRUE').item()
+waveform_data = np.load(r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure03\intermediate_data\width_asymmetry.npy', allow_pickle='TRUE').item()
 
 seizure_responses['mean_firing'] = firing_characteristics['mean_firing']
 seizure_responses['median_ISI'] = firing_characteristics['median_ISI']
@@ -230,7 +268,7 @@ ax.set_xticks([1, 2, 3])
 ax.set_xticklabels(['inhibted', 'excited', 'no change'], fontsize=14, fontweight='bold', rotation=45) 
 
 #ax.set_xlabel('Spike Width (ms)', fontsize=14, fontweight='bold')
-ax.set_ylabel('Peak asymmetry (B-A)/(B+A)', fontsize=14, fontweight='bold')
+ax.set_ylabel('Peak asymmetry', fontsize=14, fontweight='bold')
 ax.set_ylim((-1, 0.2))
 #ax.set_xlim((0, 2))
 plt.tight_layout()       
