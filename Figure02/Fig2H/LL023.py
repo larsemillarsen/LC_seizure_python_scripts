@@ -15,10 +15,10 @@ from vies.parse.phy import phy_data
 import scipy
 import pandas as pd
 
-eventfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\input\pinch_events\LL009.events'
-path_phy_data = r'E:\Manuscript_analysis_files\data\phy_data\LL009-final.GUI'
-lightfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\input\light009.npy'
-savedir = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\output_data\LL009.npy'
+eventfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\input\pinch_events\LL023.events'
+path_phy_data = r'E:\Manuscript_analysis_files\data\phy_data\LL023-final.GUI'
+lightfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\input\light023.npy'
+savedir = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\output_data\LL023.npy'
 #if not os.path.exists(savedir):
 #    os.makedirs(savedir)
        
@@ -27,12 +27,11 @@ p_threshold = 0.05
 srate = 30000
 data = phy_data(path_phy_data, srate)
 times = data.times
-good_clusters = [2, 3, 9, 11, 12, 14, 16, 17, 19, 22, 23, 25, 28, 42, 47, 61, 62, 65, 68, 70, 71]
+good_clusters = [2,4,5,9,12,15,16,17,20,26,33,43,48,49,52,58]
 
-sz1_start = 4408.35 
-sz2_start = 6246.86
-sz3_start = 7525.43 
-sz4_start = 0
+sz1_start = 2061.56
+sz2_start = 2753.56
+sz3_start = 2753.56
 
 light_trials = 1 # IF = 0, no light trials. IF = 1, light trials were performed
 
@@ -61,20 +60,20 @@ for t in good_clusters:
 min_firing = 0
 firing_criteria = np.zeros((len(good_clusters)))
 for i in range(len(firing_criteria)):
-    if np.min(spike_count_sz1[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing:
+    if np.min(spike_count_sz1[0:59,i]) > min_firing and np.min(spike_count_sz2[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing:
         firing_criteria[i] = 1
         
-
 ### pinch response evaluation
 f=open(eventfile, 'r')
 events = f.read()
 f.close()
 
 events=events.split('pinch')
-events=events[1:11]
+events=events[1:14]
 events = [(int(x)) for x in events]
 events = np.array(events)/srate
-adjustments = np.array([-0.2, 0.15, 0, -0.15, -0.2, -0.2, -0.2, -0.1, -0.3, 0])
+events = np.delete(events, 2)
+adjustments = np.array([-0.2, -0.35, -0.4, -0.3, -0.5, -0.5, -0.5, -0.4, -0.4, -0.4 , -0.4, -0.5])
 events = events - adjustments
 
 templates = data.templates
@@ -149,31 +148,38 @@ for i in range(len(good_clusters)):
 light_response = np.zeros((len(good_clusters)))
 if light_trials == 1:
     events = np.load(lightfile)
-    events=events[0:19, 0]
-    
+    events=events[6:21, 0]
+
     response_matrix = np.zeros((len(good_clusters), 3))
+    #spike_list = [None]
     counter = 0
     for m in good_clusters:
         spike_list = [None]
         cluster_id = str(m)
         index = [i for i, x in enumerate(list(templates)) if x == m] # gets index of all matching values in templates
         template_spikes = spiketimes[index]
+        #print(len(index))
+        ## extract windows around pinches
         
         for x in range(len(events)):
             pinch = events[x]
-            start = pinch - 14
-            stop = pinch + 14 + 7
+            start = pinch - 20
+            stop = pinch + 20
             
             index=[i for i in range(len(template_spikes)) if template_spikes[i] > start and template_spikes[i] < stop]
             spike_times_window = template_spikes[index] - start
-    
+            #print(len(spike_times_window))
+            #if m == good_clusters[0]:
             if x == 0:
                 spike_list[0]=spike_times_window
             else:
-                spike_list.append(spike_times_window)    
+                spike_list.append(spike_times_window)
+            #else:
+            #    spike_list[x]=np.concatenate((spike_list[x], spike_times_window))
+        
             
-        bins = int(35/7)
-        window = 35
+        bins = 8
+        window = 40
         binsize = window/bins
         
         bin_time = np.arange(0, window, binsize) + binsize/2
@@ -183,13 +189,14 @@ if light_trials == 1:
             for k in range(len(bin_time)):
                 for j in range(len(spike_list[i])):
                     if spike_list[i][j] > bin_time[k] - binsize/2 and spike_list[i][j] <= bin_time[k] + binsize/2:
-                        bin_count[k]=bin_count[k] + 1 
+                        bin_count[k]=bin_count[k] + 1
         
-        mean = np.mean(bin_count[[0, 1, 3, 4]])
-        std = np.std(bin_count[[0, 1, 3, 4]])
+        
+        mean = np.mean(bin_count[[0, 1, 2, 3, 5, 6, 7]])
+        std = np.std(bin_count[[0, 1, 2, 3, 5, 6, 7]])
         z_bins = (bin_count - mean) / std
         
-        response_matrix[counter, 0] =  z_bins[2]
+        response_matrix[counter, 0] =  z_bins[4]
         response_matrix[counter, 1] = m 
         
         counter = counter + 1
@@ -235,6 +242,8 @@ for i in range(len(good_clusters)):
                 
 LC_neurons = LC_neurons + ' are estimated to be stabily recorded LC neurons. A total of ' + str(no_neurons) + ' LC neurons were found.'
 print(LC_neurons)
+
+#####
 
 counter = 0
 z_matrix = np.zeros((len(lc_neuron_list), 3))

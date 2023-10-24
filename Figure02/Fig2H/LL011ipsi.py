@@ -148,7 +148,7 @@ for i in range(len(good_clusters)):
 light_response = np.zeros((len(good_clusters)))
 if light_trials == 1:
     events = np.load(lightfile)
-    events=events[0:19, 0]
+    events=events[0:20, 0]
     
     response_matrix = np.zeros((len(good_clusters), 3))
     counter = 0

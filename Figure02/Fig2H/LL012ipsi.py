@@ -15,10 +15,10 @@ from vies.parse.phy import phy_data
 import scipy
 import pandas as pd
 
-eventfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\input\pinch_events\LL012contra.events'
-path_phy_data = r'E:\Manuscript_analysis_files\data\phy_data\LL012_contra-final.GUI'
-lightfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\input\light012contra.npy'
-savedir = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\output_data\LL012contra.npy'
+eventfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\input\pinch_events\LL012ipsi.events'
+path_phy_data = r'E:\Manuscript_analysis_files\data\phy_data\LL012_ipsi-final.GUI'
+lightfile = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\input\light012ipsi.npy'
+savedir = r'E:\Manuscript_analysis_files\LC_seizure_python_scripts\Figure02\Fig2H\output_data\LL012ipsi.npy'
 #if not os.path.exists(savedir):
 #    os.makedirs(savedir)
        
@@ -27,11 +27,11 @@ p_threshold = 0.05
 srate = 30000
 data = phy_data(path_phy_data, srate)
 times = data.times
-good_clusters = [2, 12, 17, 21, 35, 39, 43, 59, 61, 62, 65, 71, 156, 166, 170, 182, 200, 204, 216, 218, 229, 240, 259, 262, 269, 273, 280, 282, 301, 310, 311, 315, 317, 318, 323, 324, 329, 338, 348, 350, 354]
+good_clusters = [34, 43, 46, 53, 86, 113, 116, 122, 137, 157, 161, 183, 197, 198]
 
-sz1_start = 124.806
-sz2_start = 1392.35
-sz3_start = 1392.35
+sz1_start = 729.362
+sz2_start = 729.362
+sz3_start = 729.362 
 
 light_trials = 1 # IF = 0, no light trials. IF = 1, light trials were performed
 
@@ -60,20 +60,20 @@ for t in good_clusters:
 min_firing = 0
 firing_criteria = np.zeros((len(good_clusters)))
 for i in range(len(firing_criteria)):
-    if np.min(spike_count_sz1[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing:
+    if np.min(spike_count_sz1[0:59,i]) > min_firing and np.min(spike_count_sz2[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing:
         firing_criteria[i] = 1
         
-
 ### pinch response evaluation
 f=open(eventfile, 'r')
 events = f.read()
 f.close()
 
-events=events.split('pinch')
-events=events[2:12]
+events=events.split('Hz')
+events=events[1].split('pinch')
+events=events[1:9]
 events = [(int(x)) for x in events]
 events = np.array(events)/srate
-adjustments = np.array([-0.05, -0.0, -0.1, -0.1, -0.3, -0.25, -0.1, -0.1, -0.25, -0.2])
+adjustments = np.array([-0.2, -0.3, -0.3, -0.3, -0.3, -0.2, -0.3, -0.1])
 events = events - adjustments
 
 templates = data.templates
@@ -148,8 +148,8 @@ for i in range(len(good_clusters)):
 light_response = np.zeros((len(good_clusters)))
 if light_trials == 1:
     events = np.load(lightfile)
-    events=events[0:19, 0]
-    
+    events=events[2:, 0]
+
     response_matrix = np.zeros((len(good_clusters), 3))
     counter = 0
     for m in good_clusters:

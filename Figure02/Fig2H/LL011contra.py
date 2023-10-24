@@ -31,7 +31,7 @@ good_clusters = [3, 7, 13, 15, 18, 31, 33, 34, 39, 40, 49, 50, 77, 83, 91, 95, 9
 
 sz1_start = 542.118
 sz2_start = 1793.91
-sz3_start = 1793.91
+sz3_start = 1793.91 
 
 light_trials = 1 # IF = 0, no light trials. IF = 1, light trials were performed
 
@@ -63,7 +63,6 @@ for i in range(len(firing_criteria)):
     if np.min(spike_count_sz1[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing and np.min(spike_count_sz3[0:59,i]) > min_firing:
         firing_criteria[i] = 1
         
-
 ### pinch response evaluation
 f=open(eventfile, 'r')
 events = f.read()
@@ -148,7 +147,8 @@ for i in range(len(good_clusters)):
 light_response = np.zeros((len(good_clusters)))
 if light_trials == 1:
     events = np.load(lightfile)
-    events=events[0:19, 0]
+    events=events[3:13, 0]
+
     
     response_matrix = np.zeros((len(good_clusters), 3))
     counter = 0
